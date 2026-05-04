@@ -7,10 +7,15 @@ phases:
     commands:
       - pip install -r requirements.txt
 
+  pre_build:
+    commands:
+      - echo "Running migrations check"
+      - python manage.py makemigrations --check --dry-run
+
   build:
     commands:
       - python manage.py test
 
-artifacts:
-  files:
-    - '**/*'
+  post_build:
+    commands:
+      - echo "Build completed"
