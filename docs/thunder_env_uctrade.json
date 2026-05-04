@@ -1,0 +1,9 @@
+{
+  "_type": "environment",
+  "name": "uctrade-local",
+  "variables": [
+    {"key": "baseUrl", "value": "http://localhost:8000"},
+    {"key": "accessToken", "value": ""},
+    {"key": "refreshToken", "value": ""}
+  ]
+}

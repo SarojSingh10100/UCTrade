@@ -1,0 +1,114 @@
+{
+  "_type": "collection",
+  "name": "uctrade API (Thunder Client)",
+  "version": "1.0.0",
+  "requests": [
+    {
+      "_id": "register",
+      "name": "Register",
+      "method": "POST",
+      "url": "{{baseUrl}}/api/users/register/",
+      "headers": [{"key": "Content-Type", "value": "application/json"}],
+      "body": {"type": "json", "raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"test@example.com\",\n  \"password\": \"StrongPassw0rd!\",\n  \"password2\": \"StrongPassw0rd!\"\n}"}
+    },
+    {
+      "_id": "token",
+      "name": "Get JWT token",
+      "method": "POST",
+      "url": "{{baseUrl}}/api/token/",
+      "headers": [{"key": "Content-Type", "value": "application/json"}],
+      "body": {"type": "json", "raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"StrongPassw0rd!\"\n}"},
+      "tests": [
+        {
+          "type": "script",
+          "script": "// Save access & refresh tokens to environment (supports Postman pm or Thunder Client client APIs)\ntry {\n  const res = (typeof pm !== 'undefined' && pm.response) ? pm.response.json() : (typeof responseBody !== 'undefined' ? JSON.parse(responseBody) : null);\n  if (res) {\n    try { pm.environment.set('accessToken', res.access); pm.environment.set('refreshToken', res.refresh); } catch(e) { /* not Postman */ }\n    try { client && client.setEnvironment && client.setEnvironment('accessToken', res.access); client && client.setEnvironment && client.setEnvironment('refreshToken', res.refresh); } catch(e) { /* not Thunder */ }\n  }\n} catch(e) { /* ignore */ }"
+        }
+      ]
+    },
+    {
+      "_id": "courses_list",
+      "name": "List Courses",
+      "method": "GET",
+      "url": "{{baseUrl}}/api/courses/",
+      "headers": []
+    },
+    {
+      "_id": "courses_create",
+      "name": "Create Course (instructor)",
+      "method": "POST",
+      "url": "{{baseUrl}}/api/courses/",
+      "headers": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{accessToken}}"}],
+      "preRequest": [{"type":"script","script":"try {\n  var token = '';\n  try { token = (typeof pm !== 'undefined' && pm.environment) ? pm.environment.get('accessToken') : ''; } catch(e) {}\n  try { if (!token && typeof client !== 'undefined' && client.getEnvironment) token = client.getEnvironment('accessToken'); } catch(e) {}\n  if (token) {\n    try { if (typeof pm !== 'undefined' && pm.request && pm.request.headers) pm.request.headers.upsert({key: 'Authorization', value: 'Bearer ' + token}); } catch(e) {}\n    try { if (typeof client !== 'undefined' && client.setRequest) client.setRequest({ headers: [{key: 'Authorization', value: 'Bearer ' + token}] }); } catch(e) {}\n  }\n} catch(e) {}"}],
+      "body": {"type": "json", "raw": "{\n  \"title\": \"Intro to Django\",\n  \"description\": \"Course description\",\n  \"price\": \"29.99\"\n}"}
+    },
+    {
+      "_id": "upload_video",
+      "name": "Upload Video (form-data)",
+      "method": "POST",
+      "url": "{{baseUrl}}/api/videos/",
+      "headers": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}],
+      "preRequest": [{"type":"script","script":"try {\n  var token = '';\n  try { token = (typeof pm !== 'undefined' && pm.environment) ? pm.environment.get('accessToken') : ''; } catch(e) {}\n  try { if (!token && typeof client !== 'undefined' && client.getEnvironment) token = client.getEnvironment('accessToken'); } catch(e) {}\n  if (token) {\n    try { if (typeof pm !== 'undefined' && pm.request && pm.request.headers) pm.request.headers.upsert({key: 'Authorization', value: 'Bearer ' + token}); } catch(e) {}\n    try { if (typeof client !== 'undefined' && client.setRequest) client.setRequest({ headers: [{key: 'Authorization', value: 'Bearer ' + token}] }); } catch(e) {}\n  }\n} catch(e) {}"}],
+      "body": {"type": "formdata", "formdata": [{"key": "course", "src": "1", "type": "text"}, {"key": "title", "src": "Lecture 1", "type": "text"}, {"key": "file", "src": "path/to/video.mp4", "type": "file"}]}
+    },
+    {
+      "_id": "create_payment_intent",
+      "name": "Create PaymentIntent",
+      "method": "POST",
+      "url": "{{baseUrl}}/api/payments/create-intent/",
+      "headers": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{accessToken}}"}],
+      "preRequest": [{"type":"script","script":"try {\n  var token = '';\n  try { token = (typeof pm !== 'undefined' && pm.environment) ? pm.environment.get('accessToken') : ''; } catch(e) {}\n  try { if (!token && typeof client !== 'undefined' && client.getEnvironment) token = client.getEnvironment('accessToken'); } catch(e) {}\n  if (token) {\n    try { if (typeof pm !== 'undefined' && pm.request && pm.request.headers) pm.request.headers.upsert({key: 'Authorization', value: 'Bearer ' + token}); } catch(e) {}\n    try { if (typeof client !== 'undefined' && client.setRequest) client.setRequest({ headers: [{key: 'Authorization', value: 'Bearer ' + token}] }); } catch(e) {}\n  }\n} catch(e) {}"}],
+      "body": {"type": "json", "raw": "{\n  \"order_id\": 1\n}"}
+    },
+    {
+      "_id": "cart_add",
+      "name": "Add to Cart",
+      "method": "POST",
+      "url": "{{baseUrl}}/api/cart/",
+      "headers": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{accessToken}}"}],
+      "preRequest": [{"type":"script","script":"try {\n  var token = '';\n  try { token = (typeof pm !== 'undefined' && pm.environment) ? pm.environment.get('accessToken') : ''; } catch(e) {}\n  try { if (!token && typeof client !== 'undefined' && client.getEnvironment) token = client.getEnvironment('accessToken'); } catch(e) {}\n  if (token) {\n    try { if (typeof pm !== 'undefined' && pm.request && pm.request.headers) pm.request.headers.upsert({key: 'Authorization', value: 'Bearer ' + token}); } catch(e) {}\n    try { if (typeof client !== 'undefined' && client.setRequest) client.setRequest({ headers: [{key: 'Authorization', value: 'Bearer ' + token}] }); } catch(e) {}\n  }\n} catch(e) {}"}],
+      "body": {"type": "json", "raw": "{\n  \"course\": 1\n}"}
+    },
+    {
+      "_id": "class_enroll",
+      "name": "Enroll Class",
+      "method": "POST",
+      "url": "{{baseUrl}}/api/classes/1/enroll/",
+      "headers": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}],
+      "preRequest": [{"type":"script","script":"try {\n  var token = '';\n  try { token = (typeof pm !== 'undefined' && pm.environment) ? pm.environment.get('accessToken') : ''; } catch(e) {}\n  try { if (!token && typeof client !== 'undefined' && client.getEnvironment) token = client.getEnvironment('accessToken'); } catch(e) {}\n  if (token) {\n    try { if (typeof pm !== 'undefined' && pm.request && pm.request.headers) pm.request.headers.upsert({key: 'Authorization', value: 'Bearer ' + token}); } catch(e) {}\n    try { if (typeof client !== 'undefined' && client.setRequest) client.setRequest({ headers: [{key: 'Authorization', value: 'Bearer ' + token}] }); } catch(e) {}\n  }\n} catch(e) {}"}]
+    },
+    {
+      "_id": "notifications_list",
+      "name": "List Notifications",
+      "method": "GET",
+      "url": "{{baseUrl}}/api/notifications/",
+      "headers": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}],
+      "preRequest": [{"type":"script","script":"try {\n  var token = '';\n  try { token = (typeof pm !== 'undefined' && pm.environment) ? pm.environment.get('accessToken') : ''; } catch(e) {}\n  try { if (!token && typeof client !== 'undefined' && client.getEnvironment) token = client.getEnvironment('accessToken'); } catch(e) {}\n  if (token) {\n    try { if (typeof pm !== 'undefined' && pm.request && pm.request.headers) pm.request.headers.upsert({key: 'Authorization', value: 'Bearer ' + token}); } catch(e) {}\n    try { if (typeof client !== 'undefined' && client.setRequest) client.setRequest({ headers: [{key: 'Authorization', value: 'Bearer ' + token}] }); } catch(e) {}\n  }\n} catch(e) {}"}]
+    },
+    {
+      "_id": "create_notification",
+      "name": "Create Notification",
+      "method": "POST",
+      "url": "{{baseUrl}}/api/notifications/",
+      "headers": [{"key": "Content-Type", "value": "application/json"}, {"key": "Authorization", "value": "Bearer {{accessToken}}"}],
+      "preRequest": [{"type":"script","script":"try {\n  var token = '';\n  try { token = (typeof pm !== 'undefined' && pm.environment) ? pm.environment.get('accessToken') : ''; } catch(e) {}\n  try { if (!token && typeof client !== 'undefined' && client.getEnvironment) token = client.getEnvironment('accessToken'); } catch(e) {}\n  if (token) {\n    try { if (typeof pm !== 'undefined' && pm.request && pm.request.headers) pm.request.headers.upsert({key: 'Authorization', value: 'Bearer ' + token}); } catch(e) {}\n    try { if (typeof client !== 'undefined' && client.setRequest) client.setRequest({ headers: [{key: 'Authorization', value: 'Bearer ' + token}] }); } catch(e) {}\n  }\n} catch(e) {}"}],
+      "body": {"type": "json", "raw": "{\n  \"title\": \"Class Reminder\",\n  \"message\": \"Class starts in 30 minutes\"\n}"}
+    },
+    {
+      "_id": "upload_pdf",
+      "name": "Upload PDF (form-data)",
+      "method": "POST",
+      "url": "{{baseUrl}}/api/courses/materials/",
+      "headers": [{"key": "Authorization", "value": "Bearer {{accessToken}}"}],
+      "preRequest": [{"type":"script","script":"try {\n  var token = '';\n  try { token = (typeof pm !== 'undefined' && pm.environment) ? pm.environment.get('accessToken') : ''; } catch(e) {}\n  try { if (!token && typeof client !== 'undefined' && client.getEnvironment) token = client.getEnvironment('accessToken'); } catch(e) {}\n  if (token) {\n    try { if (typeof pm !== 'undefined' && pm.request && pm.request.headers) pm.request.headers.upsert({key: 'Authorization', value: 'Bearer ' + token}); } catch(e) {}\n    try { if (typeof client !== 'undefined' && client.setRequest) client.setRequest({ headers: [{key: 'Authorization', value: 'Bearer ' + token}] }); } catch(e) {}\n  }\n} catch(e) {}"}],
+      "body": {"type": "formdata", "formdata": [{"key": "course", "src": "1", "type": "text"}, {"key": "title", "src": "Syllabus", "type": "text"}, {"key": "file", "src": "path/to/doc.pdf", "type": "file"}]}
+    },
+    {
+      "_id": "webhook_sim",
+      "name": "Webhook Simulation (Stripe sample)",
+      "method": "POST",
+      "url": "{{baseUrl}}/api/payments/webhook/",
+      "headers": [{"key": "Content-Type", "value": "application/json"}, {"key": "Stripe-Signature", "value": "t=12345,v1=signature"}],
+      "body": {"type": "json", "raw": "{\"type\":\"payment_intent.succeeded\",\"data\":{\"object\":{\"id\":\"pi_test_123\"}}}"}
+    }
+  ]
+}
