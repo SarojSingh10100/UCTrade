@@ -1,0 +1,72 @@
+{
+  "info": {
+    "_postman_id": "uctrade-collection",
+    "name": "uctrade API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Register",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {"mode": "raw", "raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"test@example.com\",\n  \"password\": \"StrongPassw0rd!\",\n  \"password2\": \"StrongPassw0rd!\"\n}"},
+        "url": {"raw": "{{baseUrl}}/api/users/register/", "host": ["{{baseUrl}}"], "path": ["api","users","register",""] }
+      },
+      "response": []
+    },
+    {
+      "name": "Get JWT token",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}],
+        "body": {"mode": "raw", "raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"StrongPassw0rd!\"\n}"},
+        "url": {"raw": "{{baseUrl}}/api/token/", "host": ["{{baseUrl}}"], "path": ["api","token",""] }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var data = pm.response.json();",
+              "pm.environment.set('accessToken', data.access);",
+              "pm.environment.set('refreshToken', data.refresh);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "List Courses",
+      "request": {"method": "GET", "url": {"raw": "{{baseUrl}}/api/courses/", "host": ["{{baseUrl}}"], "path": ["api","courses",""]}},
+      "response": []
+    },
+    {
+      "name": "Create Course",
+      "request": {
+        "method": "POST",
+        "header": [{"key": "Content-Type", "value": "application/json"}, {"key":"Authorization","value":"Bearer {{accessToken}}" }],
+        "body": {"mode": "raw", "raw": "{\n  \"title\": \"Intro to Django\",\n  \"description\": \"Course description\",\n  \"price\": \"29.99\"\n}"},
+        "url": {"raw": "{{baseUrl}}/api/courses/", "host": ["{{baseUrl}}"], "path": ["api","courses",""]}
+      }
+    },
+    {
+      "name": "Add to Cart",
+      "request": {
+        "method": "POST",
+        "header": [{"key":"Content-Type","value":"application/json"}, {"key":"Authorization","value":"Bearer {{accessToken}}"}],
+        "body": {"mode": "raw", "raw": "{\n  \"course\": 1\n}"},
+        "url": {"raw": "{{baseUrl}}/api/cart/", "host": ["{{baseUrl}}"], "path": ["api","cart",""]}
+      }
+    },
+    {
+      "name": "Create PaymentIntent",
+      "request": {
+        "method": "POST",
+        "header": [{"key":"Content-Type","value":"application/json"}, {"key":"Authorization","value":"Bearer {{accessToken}}"}],
+        "body": {"mode": "raw", "raw": "{\n  \"order_id\": 1\n}"},
+        "url": {"raw": "{{baseUrl}}/api/payments/create-intent/", "host": ["{{baseUrl}}"], "path": ["api","payments","create-intent",""]}
+      }
+    }
+  ]
+}
