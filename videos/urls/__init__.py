@@ -1,5 +1,1 @@
-from django.urls import path, include
-
-urlpatterns = [
-    path('', include('videos.urls.videos')),
-]
+from videos.urls.videos import urlpatterns

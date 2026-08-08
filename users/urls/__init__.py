@@ -1,5 +1,1 @@
-from django.urls import path, include
-
-urlpatterns = [
-    path('', include('users.urls.authentication')),
-]
+from users.urls.authentication import urlpatterns

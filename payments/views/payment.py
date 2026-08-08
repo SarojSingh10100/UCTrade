@@ -1,11 +1,12 @@
 import stripe
-import json
 import logging
 from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
 from ..models import Order, Transaction
+from courses.models import CourseEnrollment
+from ..serializers import OrderSerializer
 
 logger = logging.getLogger(__name__)
 # set stripe key from settings (safe default if not present)
@@ -25,22 +26,24 @@ class CreatePaymentIntentView(APIView):
         stripe.api_key = getattr(settings, 'STRIPE_SECRET_KEY', None)
 
         try:
-            # If Stripe secret is not configured and we're in DEBUG, simulate a PaymentIntent for local testing
-            if not stripe.api_key and getattr(settings, 'DEBUG', False):
-                intent = {'id': f'test_pi_{order.id}', 'client_secret': f'test_cs_{order.id}'}
-            else:
-                if not stripe.api_key:
-                    return Response({'detail': 'Stripe not configured.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-                intent = stripe.PaymentIntent.create(
-                    amount=int(order.total_amount * 100),
-                    currency='usd',
-                    metadata={'order_id': str(order.id)}
+            if not stripe.api_key:
+                return Response(
+                    {'detail': 'Payments are not configured. Set STRIPE_SECRET_KEY on the server.'},
+                    status=status.HTTP_503_SERVICE_UNAVAILABLE,
                 )
+            intent = stripe.PaymentIntent.create(
+                amount=int(order.total_amount * 100),
+                currency=getattr(settings, 'PAYMENT_CURRENCY', 'inr'),
+                metadata={'order_id': str(order.id), 'user_id': str(request.user.id)}
+            )
 
-            # Create pending transaction
-            txn = Transaction.objects.create(order=order, provider_payment_id=intent['id'] if isinstance(intent, dict) else intent.id, amount=order.total_amount, status='pending')
-            return Response({'client_secret': intent['client_secret'] if isinstance(intent, dict) else intent.client_secret})
+            Transaction.objects.create(
+                order=order,
+                provider_payment_id=intent['id'] if isinstance(intent, dict) else intent.id,
+                amount=order.total_amount,
+                status='pending',
+            )
+            return Response({'client_secret': intent['client_secret'] if isinstance(intent, dict) else intent.client_secret}, status=status.HTTP_200_OK)
         except Exception as exc:
             logger.exception('Failed to create payment intent')
             # also print to stdout so test runner captures the exception details
@@ -58,15 +61,11 @@ class StripeWebhookView(APIView):
         payload = request.body
         sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
         endpoint_secret = getattr(settings, 'STRIPE_WEBHOOK_SECRET', None)
+        if not endpoint_secret:
+            logger.error('Stripe webhook rejected because STRIPE_WEBHOOK_SECRET is not configured')
+            return Response({'detail': 'Webhook verification is not configured.'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
         try:
-            if endpoint_secret:
-                event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
-            else:
-                # fallback when webhook signing secret is not configured in env
-                try:
-                    event = stripe.Event.construct_from(request.data, stripe.api_key)
-                except Exception:
-                    event = request.data
+            event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
         except Exception as e:
             logger.exception('Failed to parse Stripe webhook')
             return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -83,6 +82,10 @@ class StripeWebhookView(APIView):
                 order = txn.order
                 order.paid = True
                 order.save()
+
+                for item in order.items.all():
+                    CourseEnrollment.objects.get_or_create(user=order.user, course=item.course)
+
                 # enroll the user and notify via celery
                 try:
                     from notifications.tasks import send_enrollment_notifications_for_order
@@ -98,3 +101,11 @@ class StripeWebhookView(APIView):
                 pass
 
         return Response(status=status.HTTP_200_OK)
+
+
+class OrderHistoryView(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request):
+        orders = Order.objects.filter(user=request.user).prefetch_related('items__course').order_by('-created_at')
+        return Response(OrderSerializer(orders, many=True).data)

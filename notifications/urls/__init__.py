@@ -1,5 +1,1 @@
-from django.urls import path, include
-
-urlpatterns = [
-    path('', include('notifications.urls.notification')),
-]
+from notifications.urls.notification import urlpatterns
