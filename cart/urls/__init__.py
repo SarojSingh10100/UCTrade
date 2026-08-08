@@ -1,5 +1,1 @@
-from django.urls import path, include
-
-urlpatterns = [
-    path('', include('cart.urls.cart')),
-]
+from cart.urls.cart import urlpatterns

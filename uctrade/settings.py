@@ -145,10 +145,11 @@ WSGI_APPLICATION = 'uctrade.wsgi.application'
 # Database (use DATABASE_URL env var in production)
 # e.g. postgres://USER:PASS@HOST:PORT/NAME
 # DATABASES = {
-#     'default': env.db('DATABASE_URL', default=f'sqlite:///{BASE_DIR / "db.sqlite3"}')
+#     'default': env.db('DATABASE_URL', default=f'sqlite:///{BASE_DIR / "db.postgressql"}')
 # }
 
 DATABASE_URL = env('DATABASE_URL', default=None)
+
 if DATABASE_URL:
     DATABASES = {
         'default': env.db('DATABASE_URL')
@@ -156,14 +157,26 @@ if DATABASE_URL:
 else:
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.postgresql',
+            'ENGINE': env('DB_ENGINE', default='django.db.backends.postgresql'),
             'NAME': env('DB_NAME', default='uctrade'),
             'USER': env('DB_USER', default='postgres'),
-            'PASSWORD': env('DB_PASSWORD', default=''),
+            'PASSWORD': env('DB_PASSWORD', default='12345'),
             'HOST': env('DB_HOST', default='localhost'),
             'PORT': env('DB_PORT', default='5432'),
         }
     }
+
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'uctrade',
+#         'USER': 'postgres',
+#         'PASSWORD': '12345',
+#         'HOST': 'localhost',
+#         'PORT': '5432',
+#     }
+# }
 
 # Payment provider (Stripe)
 STRIPE_SECRET_KEY = env('STRIPE_SECRET_KEY', default='')

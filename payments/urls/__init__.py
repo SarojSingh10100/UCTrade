@@ -1,5 +1,5 @@
 from django.urls import path, include
 
-urlpatterns = [
-    path('', include('payments.urls.payment')),
-]
+from payments.urls.payment import urlpatterns as payment_urlpatterns
+
+urlpatterns = payment_urlpatterns
